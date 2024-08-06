@@ -4,12 +4,24 @@ Auth module
 """
 from typing import List, TypeVar
 from flask import request
+import re
 
 
 class Auth:
     """
     Auth class for handling authentication
     """
+    def require_auth(self, path: str, excluded_paths: List[str]) -> bool:
+        if not path or not excluded_paths:
+            return True
+        for excluded_path in excluded_paths:
+            if excluded_path.endswith('*'):
+                if re.match(f"^{excluded_path[:-1]}.*$", path):
+                    return False
+            elif path == excluded_path:
+                return False
+        return True
+
     def require_auth(self, path: str, excluded_paths: List[str]) -> bool:
         """
         Determine if authentication is required for a given path
