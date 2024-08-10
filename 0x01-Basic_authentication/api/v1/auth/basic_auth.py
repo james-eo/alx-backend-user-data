@@ -30,6 +30,14 @@ class BasicAuth(Auth):
         except Exception:
             return None
 
+    def current_user(self, request=None) -> TypeVar('User'):
+        """ Get the current user """
+        auth_header = self.authorization_header(request)
+        b64_auth_token = self.extract_base64_authorization_header(auth_header)
+        auth_token = self.decode_base64_authorization_header(b64_auth_token)
+        email, password = self.extract_user_credentials(auth_token)
+        return self.user_object_from_credentials(email, password)
+
     def extract_user_credentials(
             self, decoded_base64_authorization_header: str) -> (str, str):
         """ Extract user credentials from decoded Base64 """
@@ -41,15 +49,19 @@ class BasicAuth(Auth):
         return usr_email, usr_pwd
 
     def user_object_from_credentials(self,
-                                     user_email: str, user_pwd: str) -> User:
+                                     user_email: str,
+                                     user_pwd: str) -> TypeVar('User'):
         """ Get User instance based on email and password """
         if user_email is None or not isinstance(user_email, str) \
                 or user_pwd is None or not isinstance(user_pwd, str):
             return None
         try:
-            user = User.search({"email": user_email})
-            if not user or not user.is_valid_password(user_pwd):
+            users = User.search({'email': user_email})
+            if not users or users == []:
                 return None
-            return user
+            for user in users:
+                if user.is_valid_password(user_pwd):
+                    return user
+            return None
         except Exception:
             return None
