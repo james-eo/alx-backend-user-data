@@ -24,8 +24,7 @@ elif getenv("AUTH_TYPE") == "auth":
 
 @app.errorhandler(404)
 def not_found(error) -> str:
-    """ Not found handler
-    """
+    """ Not found handler"""
     return jsonify({"error": "Not found"}), 404
 
 
@@ -43,9 +42,7 @@ def forbidden(error) -> str:
 
 @app.before_request
 def before_request():
-    """
-    Function to execute before each request to check for authorization
-    """
+    """Check for authorization before each request"""
     if auth is None:
         return
     excluded_paths = [
